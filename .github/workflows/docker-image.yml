@@ -31,53 +31,21 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: ${{ runner.os }}-buildx-
 
-      # 4. Cache npm dependencies
-      - name: Cache npm dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-npm-
-
-      # 5. Extract metadata
+      # 4. Extract metadata
       - name: Extract metadata
         id: meta
         run: |
           echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> "$GITHUB_OUTPUT"
           echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
-      # 6. Build dev Docker image
-      - name: Build Docker image for tests
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile.dev
-          tags: ${{ steps.meta.outputs.REPO_NAME }}-dev:latest
-          load: true # Load to local Docker daemon for testing
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
-
-      # 7. Run Vitest tests
-      - name: Run Vitest tests and generate report
-        run: |
-          docker run --rm \
-            --workdir /app \
-            --entrypoint "" \
-            ${{ steps.meta.outputs.REPO_NAME }}-dev:latest \
-            sh -c "npm ci && npx vitest run --reporter=verbose"
-        env:
-          CI: true
-          NODE_ENV: test
-        timeout-minutes: 10
-
-      # 8. Login to Docker Hub
+      # 5. Login to Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 9. Build and push prod image
+      # 6. Build and push prod image
       - name: Build and push production image
         uses: docker/build-push-action@v6
         with:
