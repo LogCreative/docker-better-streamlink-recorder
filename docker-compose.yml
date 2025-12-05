@@ -1,0 +1,13 @@
+services:
+  streamlinkrecorder:
+    image: crashahotrod/docker-better-streamlink-recorder-twitch
+    container_name: streamlinkrecorder
+    environment:
+      - CHANNEL=channelToMonitorHere
+      - TWITCH_CLIENT_ID=yourClientID
+      - TWITCH_CLIENT_SECRET=yourClientSecret
+      - TWITCH_USER_TOKEN=yourUserToken #Disable Ads on Subscribed channels https://streamlink.github.io/cli/plugins/twitch.html#authentication
+    restart: always
+    volumes:
+      - "streamlink_scratch:/etc/streamlink/scratch"
+      - "streamlink_storage:/storage"

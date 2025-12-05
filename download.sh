@@ -1,14 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-CHANNEL="stuff"
-DOWNLOAD_DIR="/etc/streamlink/download"
+DOWNLOAD_DIR="/etc/streamlink/scratch/download"
+ENCODE_DIR="/etc/streamlink/scratch/encode"
 CHECK_INTERVAL=30   # seconds between live checks
-TWITCH_CLIENT_ID=stuff
-TWITCH_CLIENT_SECRET=stuff
-TWITCH_USER_TOKEN=stuff
 
-
+#: "${CHANNEL:?Need CHANNEL}"
 #: "${TWITCH_CLIENT_ID:?Need TWITCH_CLIENT_ID}"
 #: "${TWITCH_CLIENT_SECRET:?Need TWITCH_CLIENT_SECRET}"
 #: "${TWITCH_USER_TOKEN:?Need TWITCH_USER_TOKEN}"
@@ -112,7 +109,7 @@ while true; do
     # Optional: minimal sanitization to strip slashes only
     safe_title=${title//\//-}
 	FILENAME="${author} - s${folder_date}e${episode_date} - ${safe_title} - ${stream_id}.ts"
-    outfile="$DOWNLOAD_DIR/$outfile"
+    outfile="$DOWNLOAD_DIR/$FILENAME"
 
     echo "[Monitor] $CHANNEL is LIVE!"
     echo "[Monitor] Title: $title"
@@ -130,7 +127,7 @@ while true; do
         "twitch.tv/${CHANNEL}" best
 
     echo "[Monitor] Streamlink completed. Checking status again..."
-	mv "$outfile" /etc/streamlink/encode/"$FILENAME"
-    echo moved "$NEWFILE" to /etc/streamlink/encode/"$FILENAME"
+	mv "$outfile" "$ENCODE_DIR/$FILENAME"
+    echo moved "$NEWFILE" to "$ENCODE_DIR/$FILENAME"
     sleep "$CHECK_INTERVAL"
 done

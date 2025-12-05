@@ -1,7 +1,8 @@
 #!/bin/bash
-MONITORDIR="/etc/streamlink/encode"
-STORAGE_DIR="/mnt/bstad-san-plex-content"
-CHANNEL="stuff"
+MONITORDIR="/etc/streamlink/scratch/encode"
+STORAGE_DIR="/storage"
+
+#: "${CHANNEL:?Need CHANNEL}"
 
 inotifywait -m -r --format '%w%f' --include ".*ts" -e MOVED_TO "$MONITORDIR" | while read NEWFILE
 do
