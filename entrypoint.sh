@@ -29,6 +29,27 @@ check_required_dir() {
 }
 check_required_dir /etc/streamlink/scratch
 check_required_dir /storage
+check_required_dir /config
+
+check_required_file() {
+    local file_name="$1"
+    if [ -f "$file_name" ]; then
+        return 0
+    else
+        echo "ERROR: Required file ${file_name} does not exist." >&2
+        ErrorPresent=0
+        return 1
+    fi
+}
+
+if [ $UPLOAD == "true"]; then
+    check_required_var UPLOAD_BOT_NAME
+    sed -i '/^\[program:streamlink_upload\]/,/^\[/ {/autostart=fs6alse/ s/autostart=false/autostart=true/}' /etc/supervisor/conf.d/supervisord.conf
+    if check_required_file "/config/youtubeuploader_client_secrets.json" && check_required_file "/config/youtubeuploader_request.token"; then
+        ln -s /config/youtubeuploader_client_secrets.json /etc/client_secrets.json
+        ln -s /config/youtubeuploader_request.token /etc/request.token
+    fi
+fi
 
 if [ "$ErrorPresent" -eq 0 ]; then
     exit 1

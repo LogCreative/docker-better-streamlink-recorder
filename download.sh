@@ -141,9 +141,27 @@ get_kick_channel_info() {
 }
 
 # ------------------------------------------------------------
+# Function: notify Discord
+# ------------------------------------------------------------
+notify_discord() {
+    local message="$1"
+
+    curl -s -X POST \
+        -H "Content-Type: application/json" \
+        -d "{\"content\": \"${message}\"}" \
+        "$DISCORD_WEBHOOK_URL" > /dev/null
+}
+
+# ------------------------------------------------------------
 # Main loop
 # ------------------------------------------------------------
 echo "[Monitor] Starting live status loop for channel: $CHANNEL"
+
+if [ "$YOUTUBE_SPLITTING" == true ]; then
+    HLS_DURATION="--hls-duration 11h59m30s"
+else
+    HLS_DURATION=""
+fi
 
 if [ $MODE == "twitch" ]; then
     while true; do
@@ -175,6 +193,9 @@ if [ $MODE == "twitch" ]; then
         echo "[Monitor] $CHANNEL is LIVE on Twitch!"
         echo "[Monitor] Title: $title"
         echo "[Monitor] Output: $outfile"
+        if [ "$DISCORD_WEBHOOK_URL" != ""]; then
+            notify_discord "**${CHANNEL} is LIVE!**\nTitle: ${title}"
+        fi
 
         /usr/local/bin/streamlink \
             --retry-streams 30 \
@@ -184,12 +205,14 @@ if [ $MODE == "twitch" ]; then
             --twitch-api-header "Authorization=OAuth $TWITCH_USER_TOKEN"\
             --webbrowser true \
             --webbrowser-headless true \
-            --hls-duration 11h59m30s \
+            $HLS_DURATION \
             "twitch.tv/${CHANNEL}" best
 
         echo "[Monitor] Streamlink completed. Checking status again..."
-        mv "$outfile" "$ENCODE_DIR/$FILENAME"
-        echo moved "$NEWFILE" to "$ENCODE_DIR/$FILENAME"
+        if [ $UPLOAD == "false" ]; then
+            mv "$outfile" "$ENCODE_DIR/$FILENAME"
+            echo moved "$NEWFILE" to "$ENCODE_DIR/$FILENAME"
+        fi
         sleep "$CHECK_INTERVAL"
     done
 elif [ $MODE == "kick" ]; then
@@ -220,6 +243,9 @@ elif [ $MODE == "kick" ]; then
         echo "[Monitor] $CHANNEL is LIVE on Kick!"
         echo "[Monitor] Title: $title"
         echo "[Monitor] Output: $outfile"
+        if [ "$DISCORD_WEBHOOK_URL" != ""]; then
+            notify_discord "**${CHANNEL} is LIVE!**\nTitle: ${title}"
+        fi
 
         /usr/local/bin/streamlink \
             --retry-streams 30 \
@@ -227,12 +253,14 @@ elif [ $MODE == "kick" ]; then
             --output "$outfile" \
             --webbrowser true \
             --webbrowser-headless true \
-            --hls-duration 11h59m30s \
+            $HLS_DURATION \
             "kick.com/${CHANNEL}" best
 
         echo "[Monitor] Streamlink completed. Checking status again..."
-        mv "$outfile" "$ENCODE_DIR/$FILENAME"
-        echo moved "$NEWFILE" to "$ENCODE_DIR/$FILENAME"
+        if [ $UPLOAD == "false" ]; then
+            mv "$outfile" "$ENCODE_DIR/$FILENAME"
+            echo moved "$NEWFILE" to "$ENCODE_DIR/$FILENAME"
+        fi
         sleep "$CHECK_INTERVAL"
     done
 else

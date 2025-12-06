@@ -7,8 +7,14 @@ services:
       - CHANNEL=channelToMonitorHere
       - CLIENT_ID=yourClientID
       - CLIENT_SECRET=yourClientSecret
+      #optional
+      - UPLOAD=trueorfalse
+      - UPLOAD_BOT_NAME=name
+      - YOUTUBE_SPLITTING=trueorfalse
+      - DISCORD_WEBHOOK_URL=fullurlofdiscordwebhook
       - TWITCH_USER_TOKEN=yourUserToken #Disable Ads on Subscribed channels https://streamlink.github.io/cli/plugins/twitch.html#authentication
     restart: always
     volumes:
       - "streamlink_scratch:/etc/streamlink/scratch"
       - "streamlink_storage:/storage"
+      - "streamlink_config:/config"
