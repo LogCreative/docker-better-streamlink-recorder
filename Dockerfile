@@ -11,6 +11,8 @@ COPY ./download.sh /etc/streamlink/tools/
 COPY ./encode.sh /etc/streamlink/tools/
 COPY ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /etc/streamlink/tools/download.sh
+RUN chmod +x /etc/streamlink/tools/encode.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 ENTRYPOINT ["entrypoint.sh"]
