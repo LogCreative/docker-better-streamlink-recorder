@@ -28,6 +28,10 @@ check_required_dir /etc/streamlink/scratch
 check_required_dir /storage
 
 if [ "$ErrorPresent" -eq 0 ]; then
+    echo "Current Username: $(id -un)"
+    echo "Primary Group: $(id -gn)"
+    echo "Sleeping"
+    sleep 10
     exit 1
 fi
 
