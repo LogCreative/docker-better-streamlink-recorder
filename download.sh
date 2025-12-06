@@ -192,7 +192,7 @@ if (( mode == "twitch")); then
         echo moved "$NEWFILE" to "$ENCODE_DIR/$FILENAME"
         sleep "$CHECK_INTERVAL"
     done
-else if [ mode == "kick" ]; then
+elif [ mode == "kick" ]; then
     while true; do
         ensure_kick_token
         json=$(get_kick_channel_info 2>/dev/null)
