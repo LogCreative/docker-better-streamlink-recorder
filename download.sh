@@ -145,7 +145,7 @@ get_kick_channel_info() {
 # ------------------------------------------------------------
 echo "[Monitor] Starting live status loop for channel: $CHANNEL"
 
-if [ mode == "twitch" ]; then
+if [ $MODE == "twitch" ]; then
     while true; do
         # Make sure token is valid in the PARENT shell
         ensure_twitch_token
@@ -192,7 +192,7 @@ if [ mode == "twitch" ]; then
         echo moved "$NEWFILE" to "$ENCODE_DIR/$FILENAME"
         sleep "$CHECK_INTERVAL"
     done
-elif [ mode == "kick" ]; then
+elif [ $MODE == "kick" ]; then
     while true; do
         ensure_kick_token
         json=$(get_kick_channel_info 2>/dev/null)
