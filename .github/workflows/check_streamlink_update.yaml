@@ -32,28 +32,56 @@ jobs:
         echo "LATEST_HASH=$LATEST_HASH" >> $GITHUB_OUTPUT
         echo "Retrieved latest hash from Streamlink repo: $LATEST_HASH"
       
-    - name: Read current commit hash from Dockerfile
+    - name: Read current Streamlink commit hash from Dockerfile
       id: read_current_hash
       run: |
         CURRENT_HASH=$(grep 'ENV streamlinkCommit=' ${{ env.FILE_TO_UPDATE }} | cut -d'=' -f2 | tr -d ' ' | tr -d '"')
         echo "CURRENT_HASH=$CURRENT_HASH" >> $GITHUB_OUTPUT
         echo "Current hash in our repo: $CURRENT_HASH"
 
-    - name: Check for update
-      id: check
+    - name: Get latest tag from youtubeuploader repo
+      id: get_ytu_latest_tag
+      run: |
+        release_json=$(curl https://api.github.com/repos/porjo/youtubeuploader/releases/latest)
+        LATEST_TAG=$(echo "$release_json" | jq -r '.tag_name')
+        echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_OUTPUT
+        echo "Retrieved latest tag from youtubeuploader repo: $LATEST_TAG"
+
+    - name: Read current Youtubeuploder release tag from Dockerfile
+      id: read_current_ytu_tag
+      run: |
+        CURRENT_YTU_TAG=$(grep 'ARG YTU_RELEASE=' ${{ env.FILE_TO_UPDATE }} | cut -d'=' -f2 | tr -d ' ' | tr -d '"')
+        echo "CURRENT_YTU_TAG=$CURRENT_YTU_TAG" >> $GITHUB_OUTPUT
+        echo "Current hash in our repo: $CURRENT_YTU_TAG"
+
+    - name: Check for Streamlink update
+      id: check_streamlink
       if: ${{ steps.get_latest_hash.outputs.LATEST_HASH != steps.read_current_hash.outputs.CURRENT_HASH }}
       run: |
         echo "::notice::Hash has changed. Proceeding with update."
         echo "update_needed=true" >> $GITHUB_OUTPUT
+
+    - name: Check for Youtubeuploder update
+      id: check_ytu
+      if: ${{ steps.get_ytu_latest_tag.outputs.LATEST_TAG != steps.read_current_ytu_tag.outputs.CURRENT_YTU_TAG }}
+      run: |
+        echo "::notice::Youtubeuploder tag has changed. Proceeding with update."
+        echo "update_needed=true" >> $GITHUB_OUTPUT
         
-    - name: Update file with new hash
-      if: ${{ steps.check.outputs.update_needed == 'true' }}
+    - name: Update file with new streamlink hash
+      if: ${{ steps.check_streamlink.outputs.update_needed == 'true' }}
       run: |
         NEW_HASH="${{ steps.get_latest_hash.outputs.LATEST_HASH }}"
         sed -i "s/^ENV streamlinkCommit=.*/ENV streamlinkCommit=$NEW_HASH/" ${{ env.FILE_TO_UPDATE }}
 
+    - name: Update file with new Youtubeuploder tag
+      if: ${{ steps.check_ytu.outputs.update_needed == 'true' }}
+      run: |
+        NEW_TAG="${{ steps.get_ytu_latest_tag.outputs.LATEST_TAG }}"
+        sed -i "s/^ARG YTU_RELEASE=.*/ARG YTU_RELEASE=$NEW_TAG/" ${{ env.FILE_TO_UPDATE }}
+
     - name: Commit and push to our repo
-      if: ${{ steps.check.outputs.update_needed == 'true' }}
+      if: ${{ steps.check_streamlink.outputs.update_needed == 'true' || steps.check_ytu.outputs.update_needed == 'true' }} 
       run: |
         git config user.name "GitHub Actions Bot"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
