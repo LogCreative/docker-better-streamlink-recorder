@@ -1,7 +1,7 @@
 FROM python:3.12.2
 LABEL org.opencontainers.image.authors="crashahotrod@gmail.com"
 ARG YTU_RELEASE=v1.25.5
-ARG BINARY_DOWNLOAD_URL="https://github.com/porjo/youtubeuploader/releases/download/v${YTU_RELEASE}/youtubeuploader_${YTU_RELEASE}_Linux_amd64.tar.gz"
+ARG BINARY_DOWNLOAD_URL="https://github.com/porjo/youtubeuploader/releases/download/${YTU_RELEASE}/youtubeuploader_${YTU_RELEASE:1}_Linux_amd64.tar.gz"
 RUN curl -L -o youtubeuploader.tar.gz "${BINARY_DOWNLOAD_URL}"
 RUN tar -xzf youtubeuploader.tar.gz -C /etc youtubeuploader
 ENV streamlinkCommit=5a83a3806b5941639c3751ac15a9fed175019b31
