@@ -78,14 +78,14 @@ jobs:
 
     - name: Check for Streamlink update
       id: check_streamlink
-      if: ${{ steps.get_latest_hash.outputs.LATEST_HASH != steps.read_current_hash.outputs.CURRENT_HASH }}
+      if: ${{ steps.get_latest_hash.outputs.LATEST_HASH != steps.read_current_hash.outputs.CURRENT_HASH || steps.read_current_hash.outputs.CURRENT_HASH == ''}}
       run: |
         echo "::notice::Hash has changed. Proceeding with update."
         echo "update_needed=true" >> $GITHUB_OUTPUT
 
     - name: Check for Youtubeuploder update
       id: check_ytu
-      if: ${{ steps.get_ytu_latest_tag.outputs.LATEST_TAG != steps.read_current_ytu_tag.outputs.CURRENT_YTU_TAG }}
+      if: ${{ steps.get_ytu_latest_tag.outputs.LATEST_TAG != steps.read_current_ytu_tag.outputs.CURRENT_YTU_TAG || steps.read_current_ytu_tag.outputs.CURRENT_YTU_TAG == '' }}
       run: |
         echo "::notice::Youtubeuploder tag has changed. Proceeding with update."
         echo "update_needed=true" >> $GITHUB_OUTPUT
