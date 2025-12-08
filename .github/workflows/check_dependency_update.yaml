@@ -34,7 +34,7 @@ jobs:
             echo "Waiting 5 seconds before next retry..."
             sleep 5
           else
-            echo "hash=$LATEST_HASH" >> $GITHUB_OUTPUT
+            echo "$LATEST_HASH=$LATEST_HASH" >> $GITHUB_OUTPUT
             echo "Retrieved latest hash from Streamlink repo: $LATEST_HASH"
             exit 0
           fi
