@@ -5,7 +5,7 @@ ARG YTU_SHORT="${YTU_RELEASE#v}"
 ARG BINARY_DOWNLOAD_URL="https://github.com/porjo/youtubeuploader/releases/download/${YTU_RELEASE}/youtubeuploader_${YTU_SHORT}_Linux_amd64.tar.gz"
 RUN curl -L -o youtubeuploader.tar.gz "${BINARY_DOWNLOAD_URL}"
 RUN tar -xzf youtubeuploader.tar.gz -C /etc youtubeuploader
-ENV streamlinkCommit=d7f616b750475431b31a2d4191c38172447bbe2f
+ENV streamlinkCommit=890f5b44f9c0ccd99d5acbb17e7a63cb6d4bed56
 RUN apt-get update && apt-get install supervisor python3-pip jq inotify-tools ffmpeg exiftool -y
 RUN pip3 install --upgrade git+https://github.com/streamlink/streamlink.git@${streamlinkCommit}
 RUN mkdir -p /config
