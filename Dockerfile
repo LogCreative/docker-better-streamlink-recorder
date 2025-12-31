@@ -6,7 +6,8 @@ ARG BINARY_DOWNLOAD_URL="https://github.com/porjo/youtubeuploader/releases/downl
 RUN curl -L -o youtubeuploader.tar.gz "${BINARY_DOWNLOAD_URL}"
 RUN tar -xzf youtubeuploader.tar.gz -C /etc youtubeuploader
 ENV streamlinkCommit=e2039b18ff07221551a3772d3222e2e7a67bd290
-RUN apt-get update && apt-get install supervisor python3-pip jq inotify-tools ffmpeg exiftool -y
+RUN apt-get update && apt-get install supervisor python3-pip jq inotify-tools ffmpeg exiftool chromium chromium-driver -y
+ENV CHROME_BIN=/usr/bin/chromium CHROME_PATH=/usr/lib/chromium/
 RUN pip3 install --upgrade git+https://github.com/streamlink/streamlink.git@${streamlinkCommit}
 RUN mkdir -p /config
 RUN mkdir -p /storage
