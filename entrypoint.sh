@@ -60,6 +60,7 @@ if [ "{$ENCODE:-false}" == "true" ]; then
 fi
 
 if [ "$ErrorPresent" -eq 0 ]; then
+    sleep 30
     exit 1
 fi
 chown -R "$USER_NAME:$USER_NAME" /etc/supervisor/conf.d/
