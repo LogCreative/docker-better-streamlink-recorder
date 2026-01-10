@@ -8,7 +8,7 @@ RUN groupadd -g ${GROUP_ID} ${USER_NAME} && useradd -u ${USER_ID} -g ${USER_NAME
 ARG YTU_RELEASE=v1.25.5
 ARG YTU_SHORT="${YTU_RELEASE#v}"
 ARG BINARY_DOWNLOAD_URL="https://github.com/porjo/youtubeuploader/releases/download/${YTU_RELEASE}/youtubeuploader_${YTU_SHORT}_Linux_amd64.tar.gz"
-RUN apt-get update && apt-get install -y supervisor python3-pip jq inotify-tools ffmpeg exiftool chromium chromium-driver gosu libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2 dbus-x11 && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y supervisor python3-pip jq inotify-tools ffmpeg exiftool chromium chromium-driver gosu libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2 dbus-x11 tini && rm -rf /var/lib/apt/lists/*
 RUN curl -L -o youtubeuploader.tar.gz "${BINARY_DOWNLOAD_URL}"
 RUN tar -xzf youtubeuploader.tar.gz -C /etc youtubeuploader
 ENV streamlinkCommit=1dddb6b887f0a3b9fb33c43f43d4edd6e98f849b
@@ -29,7 +29,5 @@ COPY ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /etc/streamlink/tools/*.sh /usr/local/bin/entrypoint.sh
 
-#ENV DBUS_SESSION_BUS_ADDRESS=unix:path=/dev/null
-
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["/usr/bin/tini", "--","entrypoint.sh"]
 CMD ["supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
