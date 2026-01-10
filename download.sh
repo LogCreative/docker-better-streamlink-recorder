@@ -188,7 +188,7 @@ if [ $MODE == "twitch" ]; then
 
         # Optional: minimal sanitization to strip slashes only
         safe_title=${title//\//-}
-        if [ "${ENCODE:-false}" == "false" &&  "${UPLOAD:-false}" == "false"]; then
+        if [ "${ENCODE:-false}" == "false" &&  "${UPLOAD:-false}" == "false" ]; then
             FILENAME="${author} - s${folder_date}e${episode_date} - ${safe_title} - {edition-${MODE}} - ${stream_id}.mp4"
             FOLDERDATE=$(date +%Y%m)
             mkdir -p "$STORAGE_DIR/$CHANNEL/Season $FOLDERDATE"
@@ -272,7 +272,7 @@ elif [ $MODE == "kick" ]; then
 
         # Optional: minimal sanitization to strip slashes only
         safe_title=${title//\//-}
-        if [ "${ENCODE:-false}" == "false" &&  "${UPLOAD:-false}" == "false"]; then
+        if [ "${ENCODE:-false}" == "false" &&  "${UPLOAD:-false}" == "false" ]; then
             FILENAME="${author} - s${folder_date}e${episode_date} - ${safe_title} - {edition-${MODE}} - ${stream_id}.mp4"
             FOLDERDATE=$(date +%Y%m)
             mkdir -p "$STORAGE_DIR/$CHANNEL/Season $FOLDERDATE"
