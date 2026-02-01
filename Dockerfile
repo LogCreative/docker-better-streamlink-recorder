@@ -7,20 +7,35 @@ ENV USER_NAME=${USER_NAME}
 RUN groupadd -g ${GROUP_ID} ${USER_NAME} && useradd -u ${USER_ID} -g ${USER_NAME} -m -s /bin/bash ${USER_NAME}
 ARG YTU_RELEASE=v1.25.5
 ARG YTU_SHORT="${YTU_RELEASE#v}"
-ARG BINARY_DOWNLOAD_URL="https://github.com/porjo/youtubeuploader/releases/download/${YTU_RELEASE}/youtubeuploader_${YTU_SHORT}_Linux_amd64.tar.gz"
-RUN apt-get update && apt-get install -y supervisor python3-pip jq inotify-tools ffmpeg exiftool chromium chromium-driver gosu libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2 dbus-x11 tini && rm -rf /var/lib/apt/lists/*
-RUN curl -L -o youtubeuploader.tar.gz "${BINARY_DOWNLOAD_URL}"
-RUN tar -xzf youtubeuploader.tar.gz -C /etc youtubeuploader
+# TARGETARCH is provided by buildx (e.g. arm64, amd64). Choose the correct binary for the architecture.
+ARG TARGETARCH
+# Replace debian update to a local mirror if necessary
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources &&  \
+    sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources
+RUN apt-get update && apt-get install -y --fix-missing supervisor python3-pip jq inotify-tools ffmpeg exiftool gosu libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2 dbus-x11 tini
+RUN apt-get install -y chromium chromium-driver
+RUN apt-get install -y vim libcap2-bin
+RUN rm -rf /var/lib/apt/lists/*
+# Download the youtubeuploader release matching the target architecture (amd64 vs arm64)
+RUN if [ "${TARGETARCH}" = "arm64" ] || [ "${TARGETARCH}" = "aarch64" ] ; then ARCH=arm64; else ARCH=amd64; fi && \
+    BINARY_DOWNLOAD_URL="https://github.com/porjo/youtubeuploader/releases/download/${YTU_RELEASE}/youtubeuploader_${YTU_SHORT}_Linux_${ARCH}.tar.gz" && \
+    curl -L -o youtubeuploader.tar.gz "${BINARY_DOWNLOAD_URL}" && \
+    tar -xzf youtubeuploader.tar.gz -C /etc youtubeuploader && rm -f youtubeuploader.tar.gz
 ENV streamlinkCommit=7799a6a8974ba1572f128ef573b9d99b6ce0309f
 ENV CHROME_BIN=/usr/bin/chromium CHROME_PATH=/usr/lib/chromium/
 RUN pip3 install --upgrade git+https://github.com/streamlink/streamlink.git@${streamlinkCommit}
 RUN sed -i '/arguments.extend(\[/a \                "--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu",' /usr/local/lib/python3.12/site-packages/streamlink/webbrowser/chromium.py
 RUN dbus-uuidgen > /etc/machine-id
+RUN mkdir -p /var/log/streamlink && chmod 777 /var/log/streamlink
 RUN mkdir -p /config
 RUN mkdir -p /storage
 RUN mkdir -p /etc/streamlink/tools
 RUN mkdir -p /etc/streamlink/scratch
 RUN mkdir -p /var/run/dbus
+
+# ignore the error here
+RUN sh -c "$(curl -L https://github.com/mzz2017/gg/raw/main/release/go.sh)" || true
+RUN ln -s /usr/local/bin/gg /usr/bin/gg
 
 COPY ./download.sh /etc/streamlink/tools/
 COPY ./encode.sh /etc/streamlink/tools/
@@ -29,5 +44,5 @@ COPY ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /etc/streamlink/tools/*.sh /usr/local/bin/entrypoint.sh
 
-ENTRYPOINT ["/usr/bin/tini", "--","entrypoint.sh"]
+ENTRYPOINT ["/usr/bin/tini", "--","/usr/local/bin/entrypoint.sh"]
 CMD ["supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

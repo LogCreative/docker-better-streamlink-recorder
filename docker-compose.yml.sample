@@ -7,6 +7,7 @@ services:
       - CHANNEL=channelToMonitorHere
       - CLIENT_ID=yourClientID
       - CLIENT_SECRET=yourClientSecret
+      - GG_CONFIG=yourggnode
       #optional
       - REMUX=trueorfalse
       - ENCODE=trueorfalse
@@ -20,3 +21,4 @@ services:
       - "streamlink_scratch:/etc/streamlink/scratch"
       - "streamlink_storage:/storage"
       - "streamlink_config:/config"
+      - "streamlink_log:/var/log/streamlink"
